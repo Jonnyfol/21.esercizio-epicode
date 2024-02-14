@@ -7,12 +7,14 @@ fetch("https://striveschool-api.herokuapp.com/books")
         return resp.json();
     })
     .then(data => {
-        books.push(...data); // Aggiungi gli elementi dell'array data a books
+        books.push(...data); 
         console.log(books);
     })
     .catch(err => console.error("Problem:", err));
 
 const booksContainer = document.getElementById("Bookcards");
+
+
 
 fetch("https://striveschool-api.herokuapp.com/books")
     .then(resp => {
@@ -22,44 +24,91 @@ fetch("https://striveschool-api.herokuapp.com/books")
         return resp.json();
     })
     .then(data => {
-        // Crea una riga per ogni gruppo di 4 card
         for (let i = 0; i < data.length; i += 4) {
             const row = document.createElement("div");
             row.classList.add("row", "mb-4");
 
-            // Per ogni gruppo di 4 libri, crea una card Bootstrap e aggiungila alla riga
+            
             for (let j = i; j < i + 4 && j < data.length; j++) {
                 const book = data[j];
                 const card = document.createElement("div");
+                card.id = book.asin;
                 card.classList.add("col-md-3", "mb-4");
+                
+                const cardContainer = document.createElement("div");
+                cardContainer.classList.add("card", "h-100");
+                
+                const img = document.createElement("img");
+                img.classList.add("card-img-top");
+                img.src = book.img;
+                img.alt = book.title;
+                img.style.maxWidth = "350px";
+                img.style.maxHeight = "300px";
+                
+                const cardBody = document.createElement("div");
+                cardBody.classList.add("card-body");
+                
+                const title = document.createElement("h5");
+                title.classList.add("card-title");
+                title.textContent = book.title;
+                
+                const price = document.createElement("p");
+                price.classList.add("card-text");
+                price.textContent = `Price: ${book.price}`;
+                
+                const addToCartBtn = document.createElement("button");
+                addToCartBtn.classList.add("btn", "btn-primary", "add-to-cart");
+                addToCartBtn.textContent = "Aggiungi al carrello";
+                
+                const skipBtn = document.createElement("button");
+                skipBtn.classList.add("btn", "btn-secondary");
+                skipBtn.textContent = "Salta";
 
-                card.innerHTML = `
-                    <div class="card h-100" >
-                        <img src="${book.img}" class="card-img-top" alt="${book.title}" style="max-width: 350px; max-height: 300px;">
-                        <div class="card-body">
-                            <h5 class="card-title">${book.title}</h5>
-                            <p class="card-text">Price: ${book.price}</p>
-                            <button class="btn btn-primary add-to-cart">Aggiungi al carrello</button>
-                            <button class="btn btn-secondary">Salta</button>
-                        </div>
-                    </div>
-                `;
+                const info = document.createElement("a")
+                info.classList.add("btn", "btn-secondary", "bg-info");
+                info.href = `dettagli.html?id=${book.asin}`; 
+                info.innerText = "Dettagli";
+                console.log(book.asin);
 
+
+                // document.addEventListener("click", (event) => {
+                //     if (event.target.classList.contains("btn-details")) {
+                //         const asin = event.target.dataset.id;
+                //         window.location.href = `dettagli.html?id=${asin}`;
+                //     }
+                // });
+                
+               
+                cardBody.appendChild(title);
+                cardBody.appendChild(price);
+                cardBody.appendChild(addToCartBtn);
+                cardBody.appendChild(skipBtn);
+                cardBody.appendChild(info);
+                
+               
+                cardContainer.appendChild(img);
+                cardContainer.appendChild(cardBody);
+                
+                
+                card.appendChild(cardContainer);
+
+                
                 row.appendChild(card);
             }
 
-            // Aggiungi la riga al container delle card
+            
             booksContainer.appendChild(row);
         }
     })
     .catch(err => console.error("Problem:", err));
+
 
 // Funzione per aggiungere un libro al carrello
 function addToCart(book) {
     const cartItems = document.getElementById("cart-items");
     const cartTotal = document.getElementById("cart-total");
 
-    // Verifica se il libro è già nel carrello
+    // Verifico se c'è già
     const items = cartItems.querySelectorAll("li");
     for (let i = 0; i < items.length; i++) {
         const itemTitle = items[i].querySelector(".item-title").textContent;
@@ -68,7 +117,7 @@ function addToCart(book) {
         }
     }
 
-    // Aggiungi l'elemento al carrello
+    // Aggiungo l'elemento al carrello
     const cartItem = document.createElement("li");
     cartItem.classList.add("list-group-item");
     cartItem.innerHTML = `
@@ -77,10 +126,10 @@ function addToCart(book) {
     `;
     cartItems.appendChild(cartItem);
 
-    // Aggiorna il totale
+    // Aggiorno il totale
     cartTotal.textContent = (parseFloat(cartTotal.textContent) + parseFloat(book.price)).toFixed(2);
 
-    // Applica opacità alla card
+    // Applico opacità alla card
     const card = document.querySelector(`.card[data-title="${book.title}"]`);
     if (card) {
         card.style.opacity = "0.5";
@@ -93,7 +142,7 @@ function removeFromCart(event) {
     const title = listItem.querySelector(".item-title").textContent;
     const price = parseFloat(listItem.querySelector(".item-price").textContent);
 
-    // Rimuovi l'elemento dal carrello
+    
     listItem.remove();
 
     // Ripristina l'opacità della card
@@ -102,11 +151,11 @@ function removeFromCart(event) {
         card.style.opacity = "1";
     }
 
-    // Aggiorna il totale
+    // Aggiorno il totale
     const cartTotal = document.getElementById("cart-total");
     cartTotal.textContent = (parseFloat(cartTotal.textContent) - price).toFixed(2);
 
-    // Riattiva il pulsante "Aggiungi al carrello"
+    // Riattivo il pulsante "Aggiungi al carrello"
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     addToCartButtons.forEach(button => {
         if (button.dataset.title === title) {
@@ -115,7 +164,7 @@ function removeFromCart(event) {
     });
 }
 
-// Aggiungi event listener ai pulsanti "Salta" (X)
+// Aggiungo event listener ai pulsanti (X)
 document.addEventListener("click", (event) => {
     if (event.target.classList.contains("remove-from-cart")) {
         removeFromCart(event);
@@ -204,43 +253,20 @@ document.querySelector("form").addEventListener("input", function(event) {
     updateCartTotal();
 });
 
-// Funzione per renderizzare i libri
-function renderBooks(books) {
-    const booksContainer = document.getElementById("Bookcards");
-    booksContainer.innerHTML = ""; // Pulisci il contenitore prima di renderizzare nuovi libri
 
-    // Creazione della riga al di fuori del ciclo for
-    const row = document.createElement("div");
-    row.classList.add("row", "py-4");
 
-    // Crea una card per ogni libro e aggiungila alla riga
-    books.forEach((book, index) => {
-        const card = document.createElement("div");
-        card.classList.add("col-md-3", "mb-4");
-
-        card.innerHTML = `
-            <div class="card h-100" data-title="${book.title}">
-                <img src="${book.img}" class="card-img-top" alt="${book.title}" style="max-width: 350px; max-height: 300px;">
-                <div class="card-body">
-                    <h5 class="card-title">${book.title}</h5>
-                    <p class="card-text">Price: ${book.price}</p>
-                    <button class="btn btn-primary add-to-cart">Aggiungi al carrello</button>
-                    <button class="btn btn-secondary">Salta</button>
-                </div>
-            </div>
-        `;
-
-        row.appendChild(card);
-
-        // Se la riga contiene già 4 card oppure è l'ultima card, aggiungi la riga al container delle card
-        if ((index + 1) % 4 === 0 || index === books.length - 1) {
-            booksContainer.appendChild(row);
-            // Crea una nuova riga per i prossimi libri
-            if (index !== books.length - 1) {
-                const newRow = document.createElement("div");
-                newRow.classList.add("row", "py-4");
-                row = newRow;
-            }
+// salta
+document.addEventListener("click", (event) => {
+    if (event.target.classList.contains("btn-secondary")) {
+        const card = event.target.closest(".card");
+        if (card) {
+            card.remove();
         }
-    });
-}
+    }
+});
+
+
+
+
+
+
